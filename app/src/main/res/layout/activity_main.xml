@@ -32,9 +32,24 @@
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:text="button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="button2"/>
+    </RadioGroup>
+
     <Button
         android:text="Validate"
         android:onClick="onBookClick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
 </LinearLayout>

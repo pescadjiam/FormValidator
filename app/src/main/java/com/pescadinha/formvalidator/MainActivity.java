@@ -33,20 +33,19 @@ public class MainActivity extends AppCompatActivity implements
     public void onBookClick(View view) {
         new FormValidator(this)
                 .setRequiredFields(
-                        new FVModelField[]{
-                                new FVModelField(nameField),
-                                new FVModelField(passwordField),
-                                new FVModelField(emailField),
-                                new FVModelField(toggleButton),
-                                new FVModelField(checkBox)
+                        new FVRequiredField[]{
+                                new FVRequiredField(nameField),
+                                new FVRequiredField(passwordField),
+                                new FVRequiredField(emailField)
                         }
                 )
                 .setEmailField(emailField)
+                .setPasswordField(passwordField, 6, 20)
                 .validate();
     }
 
     @Override
-    public void onPasswordFieldError() {
+    public void onPasswordLengthError() {
 
     }
 

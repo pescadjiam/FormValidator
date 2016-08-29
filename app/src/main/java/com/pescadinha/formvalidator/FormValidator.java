@@ -5,6 +5,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.ToggleButton;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class FormValidator {
 
     //Interface for form validation
     public interface IFormValidation {
-        void onPasswordFieldError();
+        void onPasswordLengthError();
         void onEmailValidationError();
         void onRequiredFieldsError();
         void onValidationSuccessful();
@@ -30,24 +31,29 @@ public class FormValidator {
     private IFormValidation iFormValidation;
 
     //REQUIRED FIELDS VARs
-    private FVModelField[] requiredFields;
+    private FVRequiredField[] requiredFields;
     private boolean animateError = false;
 
     //EMAIL VARs
     private EditText emailField;
-    private String emailPattern;
+    private String emailPattern =  "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}";
+
+    //PASSWORD VARs
+    private EditText passwordField;
+    private int passwordMinLength = -1;
+    private int passwordMaxLength = -1;
 
     public FormValidator(IFormValidation iFormValidation){
         this.iFormValidation = iFormValidation;
     }
 
     //REQUIRED FIELDS METHODS
-    public FormValidator setRequiredFields(FVModelField[] requiredFields){
+    public FormValidator setRequiredFields(FVRequiredField[] requiredFields){
         this.requiredFields = requiredFields;
         return this;
     }
 
-    public FormValidator setRequiredFields(FVModelField[] requiredFields, boolean animateError){
+    public FormValidator setRequiredFields(FVRequiredField[] requiredFields, boolean animateError){
         this.requiredFields = requiredFields;
         this.animateError = animateError;
         return this;
@@ -65,7 +71,17 @@ public class FormValidator {
         return this;
     }
 
-    public FormValidator setPasswordField() {
+    //
+    public FormValidator setPasswordField(EditText passwordField, int minLength) {
+        this.passwordField = passwordField;
+        this.passwordMinLength = minLength;
+        return this;
+    }
+
+    public FormValidator setPasswordField(EditText passwordField, int minLength, int maxLength) {
+        this.passwordField = passwordField;
+        this.passwordMinLength = minLength;
+        this.passwordMaxLength = maxLength;
         return this;
     }
 
@@ -90,6 +106,8 @@ public class FormValidator {
             return;
         }
 
+        //3rd check password fields
+
         iFormValidation.onValidationSuccessful();
 
     }
@@ -97,10 +115,10 @@ public class FormValidator {
     private boolean validateRequiredFields() {
         boolean isValid = true;
 
-        ArrayList<FVModelField> emptyFields = new ArrayList<>();
+        ArrayList<FVRequiredField> emptyFields = new ArrayList<>();
 
         if (requiredFields != null) {
-            for (FVModelField field : requiredFields) {
+            for (FVRequiredField field : requiredFields) {
                 if(field.getWidget() instanceof EditText) {
                     String widgetText = ((EditText) field.getWidget()).getText().toString();
                     if(widgetText.isEmpty()
@@ -113,12 +131,12 @@ public class FormValidator {
                     if(!widget.isChecked()){
                         isValid = false;
                     }
-                } /*else if(field.getWidget() instanceof RadioButton){
-                    RadioButton widget = (RadioButton)field.getWidget();
-                    if(!widget.isChecked()){
+                } else if(field.getWidget() instanceof RadioGroup){
+                    RadioGroup widget = (RadioGroup) field.getWidget();
+                    if(widget.getCheckedRadioButtonId() == -1){
                         isValid = false;
                     }
-                }*/ else if (field.getWidget() instanceof ToggleButton) {
+                } else if (field.getWidget() instanceof ToggleButton) {
                     ToggleButton widget = (ToggleButton)field.getWidget();
                     if(!widget.isChecked()){
                         isValid = false;
@@ -139,7 +157,7 @@ public class FormValidator {
         }
 
         if (animateError) {
-            for(FVModelField field : emptyFields){
+            for(FVRequiredField field : emptyFields){
                 Log.d(TAG, field.getWidget().toString());
             }
         }
@@ -150,11 +168,18 @@ public class FormValidator {
     private boolean validateEmailField() {
         Pattern pattern = Pattern.compile(emailPattern, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(emailField.getText().toString());
+        return matcher.matches();
+    }
 
-        if(matcher.matches()){
-            return true;
+    private boolean validatePasswordField() {
+        if(passwordMaxLength != -1) {
+            if(passwordField.getText().length() < passwordMinLength || passwordField.getText().length() > passwordMaxLength){
+                return false;
+            }
+        } else if(passwordField.getText().length() < passwordMinLength){
+            return false;
         }
 
-        return false;
+        return true;
     }
 }
